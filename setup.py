@@ -18,7 +18,7 @@ install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
 dependency_links = [x.strip().replace('git+', '') for x in all_reqs if 'git+' not in x]
 
 setup(
-    name='ppp',
+    name='pypi-publisher',
     version=__version__,
     description='A cli for publishing packages to pypi, without the hassle',
     long_description=long_description,
