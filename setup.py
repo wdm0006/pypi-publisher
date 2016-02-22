@@ -38,6 +38,6 @@ setup(
     dependency_links=dependency_links,
     author_email='will@pedalwrencher.com',
     entry_points={
-        'console_scripts': ['ppp=ppp.command_line:main'],
+        'console_scripts': ['ppp=ppp.ppp:main'],
     }
 )
