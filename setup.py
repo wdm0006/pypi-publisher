@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-VERSION = '0.0.1'
+__version__ = '0.0.1'
 
 here = path.abspath(path.dirname(__file__))
 
@@ -19,11 +19,11 @@ dependency_links = [x.strip().replace('git+', '') for x in all_reqs if 'git+' no
 
 setup(
     name='ppp',
-    version=VERSION,
+    version=__version__,
     description='A cli for publishing packages to pypi, without the hassle',
     long_description=long_description,
     url='https://github.com/wdm0006/ppp',
-    download_url='https://github.com/wdm0006/ppp/tarball/' + VERSION,
+    download_url='https://github.com/wdm0006/ppp/tarball/' + __version__,
     license='BSD',
     classifiers=[
       'Development Status :: 3 - Alpha',
