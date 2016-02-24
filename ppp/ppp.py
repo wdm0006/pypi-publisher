@@ -44,6 +44,8 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
     :param password:
     :param index_url:
     :param server_name:
+    :param verbose:
+    :param dry_run:
     :return:
     """
 
@@ -103,7 +105,10 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
 
 def check_tag(verbose=False, dry_run=False):
     """
+    Parses the setup.py file to try to find the version being pushed, then tries to push that tag to git.
 
+    :param verbose:
+    :param dry_run:
     :return:
     """
 
@@ -137,7 +142,12 @@ def check_tag(verbose=False, dry_run=False):
 
 def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     """
+    Performs the actual publishing, first will push a git tag from what is indicated in the setup.py file if that flag
+    was passed in, then registers and uploads an sdist to the indicated server
 
+    :param server_name:
+    :param dry_run:
+    :param create_tag:
     :param verbose:
     :return:
     """
@@ -170,6 +180,7 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
 
 def main():
     """
+    Entrypoint into the script, parses out the input parameters and executes the appropriate methods.
 
     :return:
     """
@@ -197,6 +208,10 @@ def main():
     index_url = args.index_url
     dry_run = args.dry_run
     create_tag = args.create_tag
+
+    # suppress traceback unless in verbose mode
+    if not verbose:
+        sys.tracebacklimit = 0
 
     # if server name is null use a uuid
     if server_name is None:

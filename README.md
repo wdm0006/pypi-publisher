@@ -44,6 +44,57 @@ Available options are:
  * -v/--verbose
  * -t/--create-tag
 
+In general, the 4 things being done are:
+
+ 1. update the .pypi file
+ 2. linting the candidate repository
+ 3. pushing a tag to git for the release
+ 4. publishing the repository to a pypi server
+ 
+### Updating .pypi file
+
+If you already have a .pypi file at ~ on the box, then you can just pass -s to reference a server in that.  If you pass
+-s and -u, -p, and/or -i for a server that is in the file already, the parameters passed will be upserted into that 
+file.  If you pass -s, -u, -p, and -i for a server that is not in the file, it will be inserted as a new server.
+
+A few examples:
+
+To use an existing server
+
+    ppp publish -s=foo
+    
+To update some values (username and index url) for an existing server
+
+    ppp publish -s=foo -u=bar -i=baz
+    
+To create a whole new server:
+
+    ppp publish -s=foo -u=bar -p=baz -i=bat
+
+### Linting the candidate repository
+
+Currently, the linting is very basic, and is just checking that a few files actually exist (manifest.in, setup.py and 
+setup.cfg).  This happens in all runs, regardless of flags passed.
+
+### Pushing a tag to git
+
+If you pass the -t flag, ppp will try to find the version number in the setup.py file and push a tag with the version to
+git.  The search looks for any line (case insensitive) that starts with __version__ or version, and takes it's value, so
+
+    __version__ = '1.0.0'
+
+or 
+
+    VERSION = '1.0.0'
+    
+Would both work perfectly. It's worth noting that if you push tags on the initial publishing to a test server, you won't 
+need to push the same tag again for the following publishing to the prod server.
+
+### Publishing the repository 
+
+Currently, this only supports sdist uploads, in the future we plan to add more sophisticated packaging functionality, 
+like wheels.
+
 Contributing
 ------------
 
