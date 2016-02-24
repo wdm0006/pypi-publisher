@@ -22,12 +22,12 @@ Installation / Usage
 
 To install use pip:
 
-    $ pip install ppp
+    $ pip install pypi-publisher
 
 
 Or clone the repo:
 
-    $ git clone https://github.com/wdm0006/ppp.git
+    $ git clone https://github.com/wdm0006/pypi-publisher.git
     $ python setup.py install
     
 Then to use just:
