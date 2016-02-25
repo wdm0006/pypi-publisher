@@ -74,18 +74,21 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
     if parser.has_section(server_name):
         if verbose:
             print('\tserver name already exists')
-        if username != parser.get(section=server_name, option='username'):
-            if verbose:
-                print('\tupdating username')
-            parser.set(section=server_name, option='username', value=username)
-        if password != parser.get(section=server_name, option='password'):
-            if verbose:
-                print('\tupdating password')
-            parser.set(section=server_name, option='password', value=password)
-        if index_url != parser.get(section=server_name, option='repository'):
-            if verbose:
-                print('\tupdating index url')
-            parser.set(section=server_name, option='repository', value=index_url)
+        if username is not None:
+            if username != parser.get(section=server_name, option='username'):
+                if verbose:
+                    print('\tupdating username')
+                parser.set(section=server_name, option='username', value=username)
+        if password is not None:
+            if password != parser.get(section=server_name, option='password'):
+                if verbose:
+                    print('\tupdating password')
+                parser.set(section=server_name, option='password', value=password)
+        if index_url is not None:
+            if index_url != parser.get(section=server_name, option='repository'):
+                if verbose:
+                    print('\tupdating index url')
+                parser.set(section=server_name, option='repository', value=index_url)
     else:
         if verbose:
             print('\tserver name not there, adding it...')

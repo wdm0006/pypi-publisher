@@ -1,7 +1,7 @@
 pypi-publisher (ppp)
 ====================
 
-version number: 0.0.2
+version number: 0.0.3
 author: Will McGinnis
 
 Overview
