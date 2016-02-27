@@ -1,8 +1,17 @@
 pypi-publisher (ppp)
 ====================
 
-version number: 0.0.3
 author: Will McGinnis
+
+[![PyPI Version](http://badge.kloud51.com/pypi/v/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Status](http://badge.kloud51.com/pypi/s/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI License](http://badge.kloud51.com/pypi/l/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Wheel](http://badge.kloud51.com/pypi/w/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Format](http://badge.kloud51.com/pypi/f/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Py_versions](http://badge.kloud51.com/pypi/p/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Downloads](http://badge.kloud51.com/pypi/d/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Implementation](http://badge.kloud51.com/pypi/i/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
+[![PyPI Egg](http://badge.kloud51.com/pypi/e/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
 
 Overview
 --------
