@@ -10,5 +10,7 @@ Things I'd like to add in and would love help with:
  * Full workflow, so a single action to:
     * tag
     * push to test
-    * verify successful packaging from test 
+    * verify successful packaging from test
+        * rollback if fails
     * push to prod
+ * rollback command (remove a release)

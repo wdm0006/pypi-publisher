@@ -106,6 +106,24 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
     return True
 
 
+def get_version():
+    """
+
+    :return:
+    """
+    with open(os.path.join(os.getcwd(), 'setup.py'), 'r') as f:
+        file_contents = f.read()
+
+    file_contents = [x.strip().lower() for x in file_contents.split('\n')]
+    file_contents = [x for x in file_contents if x.startswith('version') or x.startswith('__version')]
+    if len(file_contents) > 0:
+        vsn = file_contents[0].split('=')[-1].strip().replace('"', '').replace("'", '')
+    else:
+        raise ValueError('setup.py doesn\'t seem to have a version or __version__ specified')
+
+    return vsn
+
+
 def check_tag(verbose=False, dry_run=False):
     """
     Parses the setup.py file to try to find the version being pushed, then tries to push that tag to git.
@@ -116,15 +134,7 @@ def check_tag(verbose=False, dry_run=False):
     """
 
     # try to get the local directory setup.py into memory
-    with open(os.path.join(os.getcwd(), 'setup.py'), 'r') as f:
-        file_contents = f.read()
-
-    file_contents = [x.strip().lower() for x in file_contents.split('\n')]
-    file_contents = [x for x in file_contents if x.startswith('version') or x.startswith('__version')]
-    if len(file_contents) > 0:
-        vsn = file_contents[0].split('=')[-1].strip().replace('"', '').replace("'", '')
-    else:
-        raise ValueError('setup.py doesn\'t seem to have a version or __version__ specified')
+    vsn = get_version()
 
     if verbose:
         print('Creating Tag')
@@ -181,6 +191,50 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     return True
 
 
+def verify(server_name):
+    """
+    Aim is to verify the release on this server (try to install it and run tests if relevant).
+
+    :param server_name:
+    :return:
+    """
+
+    raise NotImplementedError
+
+
+def tag(verbose=False, dry_run=False):
+    """
+    Just tags the release.
+
+    :param server_name:
+    :return:
+    """
+
+    check_tag(verbose=verbose, dry_run=dry_run)
+
+    return True
+
+
+def release(server_name):
+    """
+    Full workflow, so a single action to:
+
+     * tag
+     * push to test
+     * verify successful packaging from test
+     * push to prod
+
+    If any single step fails, there should be some graceful recovery.  Packages cannot be removed from pypi servers, so
+    it may be as simple as bumping the version and giving pretty output.  Ideally testing can happen in such a way that
+    if the verify fails, the version doesnt have to be bumped but retesting can occur.
+
+    :param server_name:
+    :return:
+    """
+
+    raise NotImplementedError
+
+
 def main():
     """
     Entrypoint into the script, parses out the input parameters and executes the appropriate methods.
@@ -220,15 +274,30 @@ def main():
     if server_name is None:
         server_name = str(uuid.uuid4())
 
-    # get the values from the on-disk pypirc file if needed
-    update_pypirc(username, password, index_url, server_name, verbose=verbose, dry_run=dry_run)
-
+    # execute the given command
     if command.lower() == 'publish':
+        # get the values from the on-disk pypirc file if needed
+        update_pypirc(username, password, index_url, server_name, verbose=verbose, dry_run=dry_run)
+
+        # lint the directory to make sure it is ok to publish
         clean = lint_dir()
         if clean:
             return sys.exit(publish(server_name, verbose=verbose, dry_run=dry_run, create_tag=create_tag))
         else:
             raise ValueError('Directory Linting Failed.')
+    elif command.lower() == 'verify':
+        # TODO: implement
+        sys.exit(verify(server_name))
+    elif command.lower() == 'tag':
+        # lint the directory
+        clean = lint_dir()
+        if clean:
+            sys.exit(tag(server_name))
+        else:
+            raise ValueError('Directory Linting Failed.')
+    elif command.lower() == 'release':
+        # TODO: implement
+        sys.exit(release(server_name))
     else:
         raise NotImplementedError('Command %s not recognized' % (command, ))
 
