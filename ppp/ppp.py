@@ -191,6 +191,40 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     return True
 
 
+def publish_sphinx_docs():
+    """
+    Assuming you are in the git repo for a project with a gh-pages branch, it will build and publish the sphinx docs.
+
+    :return:
+    """
+
+    os.system('cd docs')
+    os.system('make clean')
+    os.system('make html')
+    os.system('cd ..')
+
+    # commit and push
+    os.system('git add -A')
+    os.system('git commit -m "building and pushing docs"')
+    os.system('git push origin master')
+
+    # switch branches and pull the data we want
+    os.system('git checkout gh-pages')
+    os.system('rm -rf .')
+    os.system('touch .nojekyll')
+    os.system('git checkout master docs/build/html')
+    os.system('mv ./docs/build/html/* ./')
+    os.system('rm -rf ./docs')
+    os.system('git add -A')
+    os.system('git commit -m "publishing updated docs..."')
+    os.system('git push origin gh-pages')
+
+    # switch back
+    os.system('git checkout master')
+
+    return True
+
+
 def verify(server_name):
     """
     Aim is to verify the release on this server (try to install it and run tests if relevant).
@@ -285,6 +319,8 @@ def main():
             return sys.exit(publish(server_name, verbose=verbose, dry_run=dry_run, create_tag=create_tag))
         else:
             raise ValueError('Directory Linting Failed.')
+    elif command.lower() == 'publish-sphinx':
+        sys.exit(publish_sphinx_docs())
     elif command.lower() == 'verify':
         # TODO: implement
         sys.exit(verify(server_name))

@@ -41,8 +41,14 @@ Or clone the repo:
     
 Then to use just:
 
-    $ ppp publish [-options]
+    $ ppp [command] [-options]
 
+Available commands are:
+
+ * publish
+ * tag
+ * publish-sphinx
+ 
 Available options are:
 
  * -u/--username
