@@ -1,1 +1,312 @@
-temp
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PyPI-Publisher (ppp) &mdash; ppp 0.0.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="ppp 0.0.4 documentation" href="#"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> ppp
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <!-- Local TOC -->
+                <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">PyPI-Publisher (ppp)</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#installation-usage">Installation / Usage</a><ul>
+<li><a class="reference internal" href="#updating-pypi-file">Updating .pypi file</a></li>
+<li><a class="reference internal" href="#linting-the-candidate-repository">Linting the candidate repository</a></li>
+<li><a class="reference internal" href="#pushing-a-tag-to-git">Pushing a tag to git</a></li>
+<li><a class="reference internal" href="#publishing-the-repository">Publishing the repository</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#detailed-documentation">Detailed Documentation</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">ppp</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>PyPI-Publisher (ppp)</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pypi-publisher-ppp">
+<h1>PyPI-Publisher (ppp)<a class="headerlink" href="#pypi-publisher-ppp" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>A cli for publishing packages to pypi, without the hassle. It just lets you in one command line call upsert into your
+.pypirc file (or reference a server already in it, or create a new file altogether if it doesn&#8217;t exist), create the git
+tag for the version specified in your setup.py file, lint the directory to make sure the required files are there, then
+register and push it all up.</p>
+<p>Super easy.</p>
+<p>In the future, we aim to add in more complex linting / last minute checks and aim to remove the need for a pypirc file
+in the first place (perhaps by creating it on the the fly with the passed args and removing it, or by mocking it).</p>
+</div>
+<div class="section" id="installation-usage">
+<h2>Installation / Usage<a class="headerlink" href="#installation-usage" title="Permalink to this headline">¶</a></h2>
+<p>To install use pip:</p>
+<p>Or clone the repo:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>git clone https://github.com/wdm0006/pypi-publisher.git
+python setup.py install
+</pre></div>
+</div>
+<p>Then to use just:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>ppp [command] [-options]
+</pre></div>
+</div>
+<p>Available commands are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>publish</li>
+<li>tag</li>
+<li>publish-sphinx</li>
+<li>list-servers</li>
+</ul>
+</div></blockquote>
+<p>Available options are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>-u/&#8211;username</li>
+<li>-p/&#8211;password</li>
+<li>-i/&#8211;index-url</li>
+<li>-s/&#8211;server-name</li>
+<li>-d/&#8211;dry-run</li>
+<li>-v/&#8211;verbose</li>
+<li>-t/&#8211;create-tag</li>
+</ul>
+</div></blockquote>
+<p>In general, the 4 things being done are:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>update the .pypi file</li>
+<li>linting the candidate repository</li>
+<li>pushing a tag to git for the release</li>
+<li>publishing the repository to a pypi server</li>
+</ol>
+</div></blockquote>
+<div class="section" id="updating-pypi-file">
+<h3>Updating .pypi file<a class="headerlink" href="#updating-pypi-file" title="Permalink to this headline">¶</a></h3>
+<p>If you already have a .pypi file at ~ on the box, then you can just pass -s to reference a server in that.  If you pass
+-s and -u, -p, and/or -i for a server that is in the file already, the parameters passed will be upserted into that
+file.  If you pass -s, -u, -p, and -i for a server that is not in the file, it will be inserted as a new server.</p>
+<p>A few examples:</p>
+<p>To use an existing server</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>ppp publish -s=foo
+</pre></div>
+</div>
+<p>To update some values (username and index url) for an existing server</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>ppp publish -s=foo -u=bar -i=baz
+</pre></div>
+</div>
+<p>To create a whole new server:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>ppp publish -s=foo -u=bar -p=baz -i=bat
+</pre></div>
+</div>
+</div>
+<div class="section" id="linting-the-candidate-repository">
+<h3>Linting the candidate repository<a class="headerlink" href="#linting-the-candidate-repository" title="Permalink to this headline">¶</a></h3>
+<p>Currently, the linting is very basic, and is just checking that a few files actually exist (manifest.in, setup.py and
+setup.cfg).  This happens in all runs, regardless of flags passed.</p>
+</div>
+<div class="section" id="pushing-a-tag-to-git">
+<h3>Pushing a tag to git<a class="headerlink" href="#pushing-a-tag-to-git" title="Permalink to this headline">¶</a></h3>
+<p>If you pass the -t flag, ppp will try to find the version number in the setup.py file and push a tag with the version to
+git.  The search looks for any line (case insensitive) that starts with __version__ or version, and takes it&#8217;s value, so</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;1.0.0&#39;</span>
+</pre></div>
+</div>
+<p>Would both work perfectly. It&#8217;s worth noting that if you push tags on the initial publishing to a test server, you won&#8217;t
+need to push the same tag again for the following publishing to the prod server.</p>
+</div>
+<div class="section" id="publishing-the-repository">
+<h3>Publishing the repository<a class="headerlink" href="#publishing-the-repository" title="Permalink to this headline">¶</a></h3>
+<p>Currently, this only supports sdist uploads, in the future we plan to add more sophisticated packaging functionality,
+like wheels.</p>
+</div>
+</div>
+</div>
+<div class="section" id="detailed-documentation">
+<h1>Detailed Documentation<a class="headerlink" href="#detailed-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Coming soon.</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Will McGinnis.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
