@@ -1,0 +1,12 @@
+MANIFEST.in
+README.md
+setup.cfg
+setup.py
+ppp/__init__.py
+ppp/ppp.py
+ppp.egg-info/PKG-INFO
+ppp.egg-info/SOURCES.txt
+ppp.egg-info/dependency_links.txt
+ppp.egg-info/entry_points.txt
+ppp.egg-info/requires.txt
+ppp.egg-info/top_level.txt

@@ -1,0 +1,46 @@
+Metadata-Version: 1.1
+Name: ppp
+Version: 0.0.1
+Summary: A cli for publishing packages to pypi, without the hassle
+Home-page: https://github.com/wdm0006/ppp
+Author: Will McGinnis
+Author-email: will@pedalwrencher.com
+License: BSD
+Download-URL: https://github.com/wdm0006/ppp/tarball/0.0.1
+Description: pypi-publisher (ppp)
+        ====================
+        
+        version number: 0.0.1
+        author: Will McGinnis
+        
+        Overview
+        --------
+        
+        A cli for publishing packages to pypi, without the hassle.
+        
+        Installation / Usage
+        --------------------
+        
+        To install use pip (soon, not yet):
+        
+            $ pip install ppp
+        
+        
+        Or clone the repo:
+        
+            $ git clone https://github.com/wdm0006/ppp.git
+            $ python setup.py install
+            
+        Contributing
+        ------------
+        
+        TBD
+        
+        Example
+        -------
+        
+        TBD
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3

@@ -1,0 +1,13 @@
+MANIFEST.in
+README.md
+requirements.txt
+setup.cfg
+setup.py
+ppp/__init__.py
+ppp/ppp.py
+pypi_publisher.egg-info/PKG-INFO
+pypi_publisher.egg-info/SOURCES.txt
+pypi_publisher.egg-info/dependency_links.txt
+pypi_publisher.egg-info/entry_points.txt
+pypi_publisher.egg-info/requires.txt
+pypi_publisher.egg-info/top_level.txt
