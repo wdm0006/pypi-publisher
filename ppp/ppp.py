@@ -225,6 +225,32 @@ def publish_sphinx_docs():
     return True
 
 
+def list_servers(verbose=False):
+    """
+    Lists the servers available in the pypirc file.
+
+    :return:
+    """
+
+    f_path = os.path.join(os.path.expanduser('~'), '.pypirc')
+    if os.path.exists(f_path):
+        if verbose:
+            print('\tpypirc file found.')
+    else:
+        if verbose:
+            print('\tNo pypirc file found.')
+            return True
+
+    parser = configparser.ConfigParser()
+    parser.read(f_path)
+    if parser.has_section('distutils'):
+        if parser.has_option(section='distutils', option='index-servers'):
+            print(parser.get(section='distutils', option='index-servers'))
+            return True
+
+    return False
+
+
 def verify(server_name):
     """
     Aim is to verify the release on this server (try to install it and run tests if relevant).
@@ -321,6 +347,8 @@ def main():
             raise ValueError('Directory Linting Failed.')
     elif command.lower() == 'publish-sphinx':
         sys.exit(publish_sphinx_docs())
+    elif command.lower() == 'list-servers':
+        sys.exit(list_servers())
     elif command.lower() == 'verify':
         # TODO: implement
         sys.exit(verify(server_name))
