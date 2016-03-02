@@ -199,6 +199,7 @@ def publish_sphinx_docs():
     :return:
     """
 
+    # This doesnt seem to be actually working.
     bash = 'cd docs && make clean && make html && cd .. && git add -A && git commit -m "building and pushing docs" && git push origin master && git checkout gh-pages && rm -rf .  && touch .nojekyll && git checkout master docs/build/html && mv ./docs/build/html/* ./ && rm -rf ./docs  && git add -A  && git commit -m "publishing updated docs..."  && git push origin gh-pages  && git checkout master'
     proc = subprocess.Popen(bash, shell=True, stdout=sys.stdout)
 
@@ -331,12 +332,13 @@ def main():
         else:
             raise ValueError('Directory Linting Failed.')
     elif command.lower() == 'publish-sphinx':
-        sys.exit(publish_sphinx_docs())
+        # TODO: impliment
+        raise NotImplementedError
     elif command.lower() == 'list-servers':
         sys.exit(list_servers())
     elif command.lower() == 'verify':
         # TODO: implement
-        sys.exit(verify(server_name))
+        raise NotImplementedError
     elif command.lower() == 'tag':
         # lint the directory
         clean = lint_dir()
@@ -346,7 +348,7 @@ def main():
             raise ValueError('Directory Linting Failed.')
     elif command.lower() == 'release':
         # TODO: implement
-        sys.exit(release(server_name))
+        raise NotImplementedError
     else:
         raise NotImplementedError('Command %s not recognized' % (command, ))
 
