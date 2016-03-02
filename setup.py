@@ -22,8 +22,8 @@ setup(
     version=__version__,
     description='A cli for publishing packages to pypi, without the hassle',
     long_description=long_description,
-    url='https://github.com/wdm0006/ppp',
-    download_url='https://github.com/wdm0006/ppp/tarball/' + __version__,
+    url='https://github.com/wdm0006/pypi-publisher',
+    download_url='https://github.com/wdm0006/pypi-publisher/tarball/' + __version__,
     license='BSD',
     classifiers=[
       'Development Status :: 3 - Alpha',
