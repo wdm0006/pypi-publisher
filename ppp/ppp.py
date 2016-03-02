@@ -245,7 +245,12 @@ def list_servers(verbose=False):
     parser.read(f_path)
     if parser.has_section('distutils'):
         if parser.has_option(section='distutils', option='index-servers'):
-            print(parser.get(section='distutils', option='index-servers'))
+            servers = parser.get(section='distutils', option='index-servers')
+            servers = [x.strip() for x in servers.split('\n') if x.strip() != '']
+            print('Servers Present in .pypirc File:')
+            for s in servers:
+                print('\t' + '* ' + s)
+
             return True
 
     return False
