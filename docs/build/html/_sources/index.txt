@@ -130,8 +130,7 @@ like wheels.
 Detailed Documentation
 ======================
 
-.. automodule:: ppp.ppp
-    :members:
+Coming soon.
 
 Indices and tables
 ==================

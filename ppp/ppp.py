@@ -14,6 +14,7 @@ import uuid
 import configparser
 import argparse
 from git import Repo
+import subprocess
 
 __author__ = 'willmcginnis'
 
@@ -198,29 +199,8 @@ def publish_sphinx_docs():
     :return:
     """
 
-    os.system('cd docs')
-    os.system('make clean')
-    os.system('make html')
-    os.system('cd ..')
-
-    # commit and push
-    os.system('git add -A')
-    os.system('git commit -m "building and pushing docs"')
-    os.system('git push origin master')
-
-    # switch branches and pull the data we want
-    os.system('git checkout gh-pages')
-    os.system('rm -rf .')
-    os.system('touch .nojekyll')
-    os.system('git checkout master docs/build/html')
-    os.system('mv ./docs/build/html/* ./')
-    os.system('rm -rf ./docs')
-    os.system('git add -A')
-    os.system('git commit -m "publishing updated docs..."')
-    os.system('git push origin gh-pages')
-
-    # switch back
-    os.system('git checkout master')
+    bash = 'cd docs && make clean && make html && cd .. && git add -A && git commit -m "building and pushing docs" && git push origin master && git checkout gh-pages && rm -rf .  && touch .nojekyll && git checkout master docs/build/html && mv ./docs/build/html/* ./ && rm -rf ./docs  && git add -A  && git commit -m "publishing updated docs..."  && git push origin gh-pages  && git checkout master'
+    proc = subprocess.Popen(bash, shell=True, stdout=sys.stdout)
 
     return True
 
