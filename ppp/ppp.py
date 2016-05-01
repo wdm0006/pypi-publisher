@@ -14,7 +14,6 @@ import uuid
 import configparser
 import argparse
 from git import Repo
-import subprocess
 
 __author__ = 'willmcginnis'
 
@@ -192,20 +191,6 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     return True
 
 
-def publish_sphinx_docs():
-    """
-    Assuming you are in the git repo for a project with a gh-pages branch, it will build and publish the sphinx docs.
-
-    :return:
-    """
-
-    # This doesnt seem to be actually working.
-    bash = 'cd docs && make clean && make html && cd .. && git add -A && git commit -m "building and pushing docs" && git push origin master && git checkout gh-pages && rm -rf .  && touch .nojekyll && git checkout master docs/build/html && mv ./docs/build/html/* ./ && rm -rf ./docs  && git add -A  && git commit -m "publishing updated docs..."  && git push origin gh-pages  && git checkout master'
-    proc = subprocess.Popen(bash, shell=True, stdout=sys.stdout)
-
-    return True
-
-
 def list_servers(verbose=False):
     """
     Lists the servers available in the pypirc file.
@@ -237,17 +222,6 @@ def list_servers(verbose=False):
     return False
 
 
-def verify(server_name):
-    """
-    Aim is to verify the release on this server (try to install it and run tests if relevant).
-
-    :param server_name:
-    :return:
-    """
-
-    raise NotImplementedError
-
-
 def tag(verbose=False, dry_run=False):
     """
     Just tags the release.
@@ -259,26 +233,6 @@ def tag(verbose=False, dry_run=False):
     check_tag(verbose=verbose, dry_run=dry_run)
 
     return True
-
-
-def release(server_name):
-    """
-    Full workflow, so a single action to:
-
-     * tag
-     * push to test
-     * verify successful packaging from test
-     * push to prod
-
-    If any single step fails, there should be some graceful recovery.  Packages cannot be removed from pypi servers, so
-    it may be as simple as bumping the version and giving pretty output.  Ideally testing can happen in such a way that
-    if the verify fails, the version doesnt have to be bumped but retesting can occur.
-
-    :param server_name:
-    :return:
-    """
-
-    raise NotImplementedError
 
 
 def main():
@@ -331,14 +285,8 @@ def main():
             return sys.exit(publish(server_name, verbose=verbose, dry_run=dry_run, create_tag=create_tag))
         else:
             raise ValueError('Directory Linting Failed.')
-    elif command.lower() == 'publish-sphinx':
-        # TODO: impliment
-        raise NotImplementedError
     elif command.lower() == 'list-servers':
         sys.exit(list_servers())
-    elif command.lower() == 'verify':
-        # TODO: implement
-        raise NotImplementedError
     elif command.lower() == 'tag':
         # lint the directory
         clean = lint_dir()
@@ -346,9 +294,6 @@ def main():
             sys.exit(tag(server_name))
         else:
             raise ValueError('Directory Linting Failed.')
-    elif command.lower() == 'release':
-        # TODO: implement
-        raise NotImplementedError
     else:
         raise NotImplementedError('Command %s not recognized' % (command, ))
 

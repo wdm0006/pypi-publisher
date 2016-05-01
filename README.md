@@ -47,7 +47,7 @@ Available commands are:
 
  * publish
  * tag
- * publish-sphinx
+ * list-servers
  
 Available options are:
 
