@@ -142,8 +142,8 @@ def check_tag(verbose=False, dry_run=False):
 
     repo = Repo(path=os.getcwd())
 
-    tags = repo.tags
-    if vsn in tags:
+    existing = [tag.name for tag in repo.tags]
+    if vsn in existing:
         raise ValueError('Tag Already Pushed to Git')
 
     if not dry_run:
