@@ -226,7 +226,8 @@ def tag(verbose=False, dry_run=False):
     """
     Just tags the release.
 
-    :param server_name:
+    :param verbose:
+    :param dry_run:
     :return:
     """
 
@@ -291,7 +292,7 @@ def main():
         # lint the directory
         clean = lint_dir()
         if clean:
-            sys.exit(tag(server_name))
+            sys.exit(tag(verbose=verbose, dry_run=dry_run))
         else:
             raise ValueError('Directory Linting Failed.')
     else:
