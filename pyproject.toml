@@ -1,0 +1,8 @@
+# Dev/test tooling only. Intentionally no [project]/[build-system] so the legacy
+# setup.py build path is untouched. Install with `uv pip install --group dev` and
+# run with `uv run --no-project pytest`.
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "gitpython>=3",
+]
