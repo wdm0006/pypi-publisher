@@ -6,6 +6,7 @@ tmp_path and git.Repo is mocked.
 """
 
 import os
+from types import SimpleNamespace
 from unittest import mock
 
 import pytest
@@ -165,7 +166,7 @@ def test_check_tag_raises_on_duplicate(tmp_path, monkeypatch):
     _write_setup_py(tmp_path, "version = '2.0.0'\n")
 
     fake_repo = mock.Mock()
-    fake_repo.tags = ["2.0.0"]  # tag already exists
+    fake_repo.tags = [SimpleNamespace(name="2.0.0")]  # tag already exists
     with mock.patch.object(ppp, "Repo", return_value=fake_repo):
         with pytest.raises(ValueError):
             ppp.check_tag()
