@@ -275,7 +275,8 @@ def main():
     if server_name is None:
         server_name = str(uuid.uuid4())
 
-    # execute the given command
+    # execute the given command; map a truthy result to a 0 (success) exit
+    # status and a falsy one to 1 (bool is an int, so sys.exit(True) exits 1).
     if command.lower() == 'publish':
         # get the values from the on-disk pypirc file if needed
         update_pypirc(username, password, index_url, server_name, verbose=verbose, dry_run=dry_run)
@@ -283,16 +284,16 @@ def main():
         # lint the directory to make sure it is ok to publish
         clean = lint_dir()
         if clean:
-            return sys.exit(publish(server_name, verbose=verbose, dry_run=dry_run, create_tag=create_tag))
+            sys.exit(0 if publish(server_name, verbose=verbose, dry_run=dry_run, create_tag=create_tag) else 1)
         else:
             raise ValueError('Directory Linting Failed.')
     elif command.lower() == 'list-servers':
-        sys.exit(list_servers())
+        sys.exit(0 if list_servers() else 1)
     elif command.lower() == 'tag':
         # lint the directory
         clean = lint_dir()
         if clean:
-            sys.exit(tag(verbose=verbose, dry_run=dry_run))
+            sys.exit(0 if tag(verbose=verbose, dry_run=dry_run) else 1)
         else:
             raise ValueError('Directory Linting Failed.')
     else:

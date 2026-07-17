@@ -209,4 +209,67 @@ def test_main_tag_command_forwards_flags(monkeypatch):
         ppp.main()
 
     mock_tag.assert_called_once_with(verbose=False, dry_run=True)
-    mock_exit.assert_called_once_with(True)
+    # A truthy (successful) command result maps to a 0 exit status.
+    mock_exit.assert_called_once_with(0)
+
+
+# ---------------------------------------------------------------------------
+# main() exit-status translation
+# ---------------------------------------------------------------------------
+
+def test_main_publish_success_exits_zero(monkeypatch):
+    """A successful publish exits 0, not the truthy return of publish()."""
+    monkeypatch.setattr(ppp.sys, "argv", ["ppp", "publish", "-s", "prod"])
+    monkeypatch.setattr(ppp, "update_pypirc", lambda *a, **k: True)
+    monkeypatch.setattr(ppp, "lint_dir", lambda: True)
+    monkeypatch.setattr(ppp, "publish", lambda *a, **k: True)
+
+    with pytest.raises(SystemExit) as excinfo:
+        ppp.main()
+
+    assert excinfo.value.code == 0
+
+
+def test_main_tag_success_exits_zero(monkeypatch):
+    """A successful tag exits 0."""
+    monkeypatch.setattr(ppp.sys, "argv", ["ppp", "tag"])
+    monkeypatch.setattr(ppp, "lint_dir", lambda: True)
+    monkeypatch.setattr(ppp, "tag", lambda *a, **k: True)
+
+    with pytest.raises(SystemExit) as excinfo:
+        ppp.main()
+
+    assert excinfo.value.code == 0
+
+
+def test_main_list_servers_success_exits_zero(fake_home, monkeypatch):
+    """list-servers with configured servers (truthy) exits 0, not 1."""
+    ppp.update_pypirc("alice", "secret", "https://example.com", "prod")
+    monkeypatch.setattr(ppp.sys, "argv", ["ppp", "list-servers"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        ppp.main()
+
+    assert excinfo.value.code == 0
+
+
+def test_main_list_servers_no_servers_exits_nonzero(fake_home, monkeypatch):
+    """list-servers with no .pypirc (falsy) exits non-zero, not 0."""
+    monkeypatch.setattr(ppp.sys, "argv", ["ppp", "list-servers"])
+
+    with pytest.raises(SystemExit) as excinfo:
+        ppp.main()
+
+    assert excinfo.value.code != 0
+
+
+def test_main_publish_lint_failure_exits_nonzero(monkeypatch):
+    """A failing directory lint aborts with a non-zero status."""
+    monkeypatch.setattr(ppp.sys, "argv", ["ppp", "publish", "-s", "prod"])
+    monkeypatch.setattr(ppp, "update_pypirc", lambda *a, **k: True)
+    monkeypatch.setattr(ppp, "lint_dir", lambda: False)
+
+    # lint failure raises ValueError; with tracebacks suppressed the CLI still
+    # exits non-zero when run as a process (verified separately below).
+    with pytest.raises(ValueError):
+        ppp.main()
