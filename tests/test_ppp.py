@@ -211,3 +211,66 @@ def test_main_tag_command_forwards_flags(monkeypatch):
 
     mock_tag.assert_called_once_with(verbose=False, dry_run=True)
     mock_exit.assert_called_once_with(True)
+
+
+# ---------------------------------------------------------------------------
+# publish
+# ---------------------------------------------------------------------------
+
+def test_publish_builds_and_uploads_with_twine():
+    """publish() builds sdist+wheel and uploads them via twine, not setup.py."""
+    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+        assert ppp.publish("testserver") is True
+
+    build_cmd, upload_cmd = [call.args[0] for call in mock_run.call_args_list]
+
+    assert build_cmd == [ppp.sys.executable, "-m", "build"]
+    assert upload_cmd == [
+        ppp.sys.executable, "-m", "twine", "upload", "-r", "testserver",
+        os.path.join("dist", "*"),
+    ]
+    for call in mock_run.call_args_list:
+        assert call.kwargs["check"] is True
+
+
+def test_publish_passes_server_name_as_argument_not_shell_string():
+    """server_name reaches twine as its own argv entry, so it is never shell-interpreted."""
+    injection = "prod; rm -rf /"
+
+    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+        ppp.publish(injection)
+
+    upload_cmd = mock_run.call_args_list[1].args[0]
+    assert upload_cmd[upload_cmd.index("-r") + 1] == injection
+
+
+def test_publish_dry_run_prints_commands_and_uploads_nothing(capsys):
+    """--dry-run prints the build/upload commands and runs no subprocess."""
+    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+        assert ppp.publish("testserver", dry_run=True) is True
+
+    mock_run.assert_not_called()
+
+    out = capsys.readouterr().out
+    assert "-m build" in out
+    assert "-m twine upload -r testserver" in out
+    assert "setup.py" not in out
+
+
+def test_publish_verbose_messaging(capsys):
+    """--verbose keeps the progress messaging around each step."""
+    with mock.patch.object(ppp.subprocess, "run"):
+        ppp.publish("testserver", verbose=True)
+
+    out = capsys.readouterr().out
+    assert "building..." in out
+    assert "publishing...." in out
+
+
+def test_publish_create_tag_tags_before_uploading():
+    """publish(-t) tags the release before it builds or uploads."""
+    with mock.patch.object(ppp, "check_tag") as mock_check_tag, \
+            mock.patch.object(ppp.subprocess, "run"):
+        ppp.publish("testserver", verbose=True, dry_run=True, create_tag=True)
+
+    mock_check_tag.assert_called_once_with(verbose=True, dry_run=True)

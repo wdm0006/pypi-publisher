@@ -13,6 +13,7 @@ import sys
 import uuid
 import configparser
 import argparse
+import subprocess
 from git import Repo
 
 __author__ = 'willmcginnis'
@@ -156,7 +157,7 @@ def check_tag(verbose=False, dry_run=False):
 def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     """
     Performs the actual publishing, first will push a git tag from what is indicated in the setup.py file if that flag
-    was passed in, then registers and uploads an sdist to the indicated server
+    was passed in, then builds an sdist and a wheel and uploads them to the indicated server with twine.
 
     :param server_name:
     :param dry_run:
@@ -171,22 +172,23 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     executable = sys.executable
 
     if verbose:
-        print('registering...')
+        print('building...')
 
-    cmd = '%s setup.py register -r %s' % (executable, server_name, )
+    cmd = [executable, '-m', 'build']
     if dry_run:
-        print('\t' + cmd)
+        print('\t' + ' '.join(cmd))
     else:
-        os.system(cmd)
+        subprocess.run(cmd, check=True)
 
     if verbose:
         print('publishing....')
 
-    cmd = '%s setup.py sdist upload -r %s' % (executable, server_name, )
+    # twine expands the dist glob itself, so this stays a single argv entry and never reaches a shell
+    cmd = [executable, '-m', 'twine', 'upload', '-r', server_name, os.path.join('dist', '*')]
     if dry_run:
-        print('\t' + cmd)
+        print('\t' + ' '.join(cmd))
     else:
-        os.system(cmd)
+        subprocess.run(cmd, check=True)
 
     return True
 
