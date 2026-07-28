@@ -37,6 +37,24 @@ def lint_dir():
     return passed
 
 
+PYPIRC_MODE = 0o600
+
+
+def _open_pypirc(f_path):
+    """
+    Opens the pypirc file for writing with owner-only permissions, creating it if needed.
+
+    :param f_path:
+    :return:
+    """
+
+    fd = os.open(f_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, PYPIRC_MODE)
+    if hasattr(os, 'fchmod'):
+        os.fchmod(fd, PYPIRC_MODE)
+
+    return os.fdopen(fd, 'w')
+
+
 def update_pypirc(username, password, index_url, server_name, verbose=False, dry_run=False):
     """
     Upserts into the pypirc file with new information from the command line.
@@ -54,24 +72,25 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
         print('Updating pypirc file')
         print('\tsearching for pypirc file...')
 
+    parser = configparser.ConfigParser()
+
     f_path = os.path.join(os.path.expanduser('~'), '.pypirc')
     if os.path.exists(f_path):
         if verbose:
             print('\tpypirc file found.')
+        parser.read(f_path)
     else:
         if verbose:
             print('\tNo pypirc file found, creating a new one')
 
-        seed_parser = configparser.ConfigParser()
-        seed_parser.add_section('distutils')
-        seed_parser.set(section='distutils', option='index-servers', value='')
+        # seeded in memory so a dry run has a [distutils] section to read back
+        parser.add_section('distutils')
+        parser.set(section='distutils', option='index-servers', value='')
 
         if not dry_run:
-            with open(f_path, 'w') as f:
-                seed_parser.write(f)
+            with _open_pypirc(f_path) as f:
+                parser.write(f)
 
-    parser = configparser.ConfigParser()
-    parser.read(f_path)
     if parser.has_section(server_name):
         if verbose:
             print('\tserver name already exists')
@@ -101,7 +120,7 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
         parser.set(section=server_name, option='password', value=password)
 
     if not dry_run:
-        with open(f_path, 'w') as f:
+        with _open_pypirc(f_path) as f:
             parser.write(f)
 
     return True

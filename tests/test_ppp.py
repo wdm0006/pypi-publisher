@@ -108,6 +108,23 @@ def test_update_pypirc_upserts_existing_section(fake_home):
     assert servers.count("myserver") == 1
 
 
+def test_update_pypirc_creates_file_owner_readable_only(fake_home):
+    ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
+
+    assert oct(os.stat(fake_home / ".pypirc").st_mode & 0o777) == "0o600"
+
+
+def test_update_pypirc_tightens_permissions_on_existing_file(fake_home):
+    # A .pypirc left world-readable by an earlier run is narrowed on the next write.
+    pypirc = fake_home / ".pypirc"
+    pypirc.write_text("[distutils]\nindex-servers = \n")
+    os.chmod(pypirc, 0o644)
+
+    ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
+
+    assert oct(os.stat(pypirc).st_mode & 0o777) == "0o600"
+
+
 def test_update_pypirc_dry_run_writes_nothing(fake_home):
     # Seed an existing file first.
     ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
@@ -116,6 +133,14 @@ def test_update_pypirc_dry_run_writes_nothing(fake_home):
     ppp.update_pypirc("bob", "hunter2", "https://new.example.com", "myserver", dry_run=True)
 
     assert (fake_home / ".pypirc").read_text() == before
+
+
+def test_update_pypirc_dry_run_without_existing_file(fake_home):
+    # First run for a new user: previewing a publish must not need a .pypirc to exist.
+    result = ppp.update_pypirc("alice", "secret", "https://example.com", "myserver", dry_run=True)
+
+    assert result is True
+    assert not (fake_home / ".pypirc").exists()
 
 
 # ---------------------------------------------------------------------------
