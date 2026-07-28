@@ -242,18 +242,37 @@ def test_main_tag_command_forwards_flags(monkeypatch):
 # publish
 # ---------------------------------------------------------------------------
 
-def test_publish_builds_and_uploads_with_twine():
+def test_publish_builds_and_uploads_with_twine(tmp_path, monkeypatch):
     """publish() builds sdist+wheel and uploads them via twine, not setup.py."""
-    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+    stale_artifact = tmp_path / "dist" / "package-0.0.1.tar.gz"
+    stale_artifact.parent.mkdir()
+    stale_artifact.write_text("")
+
+    def build_artifact(cmd, check):
+        if cmd[2] == "build":
+            output_dir = cmd[cmd.index("--outdir") + 1]
+            open(os.path.join(output_dir, "package-0.0.2.tar.gz"), "w").close()
+            os.mkdir(os.path.join(output_dir, ".tmp-build"))
+
+    monkeypatch.chdir(tmp_path)
+    with mock.patch.object(ppp.subprocess, "run", side_effect=build_artifact) as mock_run:
         assert ppp.publish("testserver") is True
 
     build_cmd, upload_cmd = [call.args[0] for call in mock_run.call_args_list]
+    output_dir = build_cmd[build_cmd.index("--outdir") + 1]
+    artifact = os.path.join(output_dir, "package-0.0.2.tar.gz")
 
-    assert build_cmd == [ppp.sys.executable, "-m", "build"]
+    assert build_cmd == [
+        ppp.sys.executable, "-m", "build", "--outdir", output_dir,
+    ]
     assert upload_cmd == [
         ppp.sys.executable, "-m", "twine", "upload", "-r", "testserver",
-        os.path.join("dist", "*"),
+        artifact,
     ]
+    assert str(stale_artifact) not in upload_cmd
+    assert os.path.join(output_dir, ".tmp-build") not in upload_cmd
+    assert "*" not in upload_cmd
+    assert not os.path.exists(output_dir)
     for call in mock_run.call_args_list:
         assert call.kwargs["check"] is True
 
@@ -277,8 +296,9 @@ def test_publish_dry_run_prints_commands_and_uploads_nothing(capsys):
     mock_run.assert_not_called()
 
     out = capsys.readouterr().out
-    assert "-m build" in out
+    assert "-m build --outdir" in out
     assert "-m twine upload -r testserver" in out
+    assert "*" not in out
     assert "setup.py" not in out
 
 

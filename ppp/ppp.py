@@ -14,6 +14,7 @@ import uuid
 import configparser
 import argparse
 import subprocess
+import tempfile
 from git import Repo
 
 __author__ = 'willmcginnis'
@@ -193,21 +194,28 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     if verbose:
         print('building...')
 
-    cmd = [executable, '-m', 'build']
-    if dry_run:
-        print('\t' + ' '.join(cmd))
-    else:
-        subprocess.run(cmd, check=True)
+    with tempfile.TemporaryDirectory() as output_dir:
+        cmd = [executable, '-m', 'build', '--outdir', output_dir]
+        if dry_run:
+            print('\t' + ' '.join(cmd))
+        else:
+            subprocess.run(cmd, check=True)
 
-    if verbose:
-        print('publishing....')
+        if verbose:
+            print('publishing....')
 
-    # twine expands the dist glob itself, so this stays a single argv entry and never reaches a shell
-    cmd = [executable, '-m', 'twine', 'upload', '-r', server_name, os.path.join('dist', '*')]
-    if dry_run:
-        print('\t' + ' '.join(cmd))
-    else:
-        subprocess.run(cmd, check=True)
+        artifacts = []
+        if not dry_run:
+            artifacts = sorted(
+                os.path.join(output_dir, name)
+                for name in os.listdir(output_dir)
+                if os.path.isfile(os.path.join(output_dir, name))
+            )
+        cmd = [executable, '-m', 'twine', 'upload', '-r', server_name] + artifacts
+        if dry_run:
+            print('\t' + ' '.join(cmd))
+        else:
+            subprocess.run(cmd, check=True)
 
     return True
 
