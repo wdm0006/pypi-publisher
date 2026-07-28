@@ -135,6 +135,14 @@ def test_update_pypirc_dry_run_writes_nothing(fake_home):
     assert (fake_home / ".pypirc").read_text() == before
 
 
+def test_update_pypirc_dry_run_without_existing_file(fake_home):
+    # First run for a new user: previewing a publish must not need a .pypirc to exist.
+    result = ppp.update_pypirc("alice", "secret", "https://example.com", "myserver", dry_run=True)
+
+    assert result is True
+    assert not (fake_home / ".pypirc").exists()
+
+
 # ---------------------------------------------------------------------------
 # list_servers
 # ---------------------------------------------------------------------------
