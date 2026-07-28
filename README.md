@@ -16,6 +16,11 @@ author: Will McGinnis
 Overview
 --------
 
+> **Project direction under review.** [`docs/direction-2026.md`](docs/direction-2026.md) surveys
+> the 2026 Python release ecosystem, walks the full release journey to find what is still
+> unserved, and recommends **archiving** this project. Read it before relying on `ppp` or
+> building on it.
+
 A cli for publishing packages to pypi, without the hassle. It just lets you in one command line call upsert into your 
 .pypirc file (or reference a server already in it, or create a new file altogether if it doesn't exist), create the git
 tag for the version specified in your setup.py file, lint the directory to make sure the required files are there, then 
