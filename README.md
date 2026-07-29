@@ -1,6 +1,43 @@
 pypi-publisher (ppp)
 ====================
 
+> **This project is archived and is no longer maintained.**
+>
+> `ppp` was written in 2016 to combine `.pypirc` management, a directory check, git tagging and a
+> `setup.py` upload into one command. All of those steps are now covered by maintained tools, and
+> its central feature — storing an index username and password in `~/.pypirc` — has been superseded
+> by PyPI Trusted Publishing, which issues short-lived tokens instead. `ppp` also only works on
+> legacy `setup.py` projects and cannot read a version from `pyproject.toml`.
+>
+> The full 2026 assessment behind this decision is in
+> [pull request #20](https://github.com/wdm0006/pypi-publisher/pull/20).
+>
+> The repository stays public and read-only. Version 0.0.4 remains installable from PyPI; it will
+> not be yanked, since it is not broken so much as obsolete.
+
+What to use instead
+-------------------
+
+Replace `ppp publish` with two commands and one decision:
+
+ 1. **Build** with `uv build` (or `python -m build`, `hatch build`, `flit build` — any of them
+    produce `dist/`).
+ 2. **Upload** either with `twine upload -r <server> dist/*`, which reads the same `~/.pypirc` that
+    `ppp` was writing, so existing server sections keep working — or, better, configure a
+    [PyPI Trusted Publisher](https://docs.pypi.org/trusted-publishers/) and let
+    [`pypa/gh-action-pypi-publish`](https://github.com/pypa/gh-action-pypi-publish) upload from a
+    tagged CI run, so no upload credential is stored anywhere.
+
+For tagging, use `git tag` / `gh release create` directly, or adopt
+[`python-semantic-release`](https://python-semantic-release.readthedocs.io/) if you want the version
+bump, changelog and tag derived from commit messages.
+
+---
+
+The original README follows, for reference.
+
+---
+
 author: Will McGinnis
 
 [![PyPI Version](http://badge.kloud51.com/pypi/v/pypi-publisher.svg)](https://pypi.python.org/pypi/pypi-publisher)
@@ -113,4 +150,5 @@ like wheels.
 Contributing
 ------------
 
-If you run into trouble, please let me know, open an issue or shoot me a pull request. 
+The repository is archived and read-only: issues and pull requests are closed. See the archive
+notice at the top for what to use instead. 

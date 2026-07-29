@@ -13,6 +13,8 @@ import sys
 import uuid
 import configparser
 import argparse
+import subprocess
+import tempfile
 from git import Repo
 
 __author__ = 'willmcginnis'
@@ -36,6 +38,24 @@ def lint_dir():
     return passed
 
 
+PYPIRC_MODE = 0o600
+
+
+def _open_pypirc(f_path):
+    """
+    Opens the pypirc file for writing with owner-only permissions, creating it if needed.
+
+    :param f_path:
+    :return:
+    """
+
+    fd = os.open(f_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, PYPIRC_MODE)
+    if hasattr(os, 'fchmod'):
+        os.fchmod(fd, PYPIRC_MODE)
+
+    return os.fdopen(fd, 'w')
+
+
 def update_pypirc(username, password, index_url, server_name, verbose=False, dry_run=False):
     """
     Upserts into the pypirc file with new information from the command line.
@@ -53,24 +73,25 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
         print('Updating pypirc file')
         print('\tsearching for pypirc file...')
 
+    parser = configparser.ConfigParser()
+
     f_path = os.path.join(os.path.expanduser('~'), '.pypirc')
     if os.path.exists(f_path):
         if verbose:
             print('\tpypirc file found.')
+        parser.read(f_path)
     else:
         if verbose:
             print('\tNo pypirc file found, creating a new one')
 
-        seed_parser = configparser.ConfigParser()
-        seed_parser.add_section('distutils')
-        seed_parser.set(section='distutils', option='index-servers', value='')
+        # seeded in memory so a dry run has a [distutils] section to read back
+        parser.add_section('distutils')
+        parser.set(section='distutils', option='index-servers', value='')
 
         if not dry_run:
-            with open(f_path, 'w') as f:
-                seed_parser.write(f)
+            with _open_pypirc(f_path) as f:
+                parser.write(f)
 
-    parser = configparser.ConfigParser()
-    parser.read(f_path)
     if parser.has_section(server_name):
         if verbose:
             print('\tserver name already exists')
@@ -100,7 +121,7 @@ def update_pypirc(username, password, index_url, server_name, verbose=False, dry
         parser.set(section=server_name, option='password', value=password)
 
     if not dry_run:
-        with open(f_path, 'w') as f:
+        with _open_pypirc(f_path) as f:
             parser.write(f)
 
     return True
@@ -156,7 +177,7 @@ def check_tag(verbose=False, dry_run=False):
 def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     """
     Performs the actual publishing, first will push a git tag from what is indicated in the setup.py file if that flag
-    was passed in, then registers and uploads an sdist to the indicated server
+    was passed in, then builds an sdist and a wheel and uploads them to the indicated server with twine.
 
     :param server_name:
     :param dry_run:
@@ -171,22 +192,30 @@ def publish(server_name, verbose=False, dry_run=False, create_tag=False):
     executable = sys.executable
 
     if verbose:
-        print('registering...')
+        print('building...')
 
-    cmd = '%s setup.py register -r %s' % (executable, server_name, )
-    if dry_run:
-        print('\t' + cmd)
-    else:
-        os.system(cmd)
+    with tempfile.TemporaryDirectory() as output_dir:
+        cmd = [executable, '-m', 'build', '--outdir', output_dir]
+        if dry_run:
+            print('\t' + ' '.join(cmd))
+        else:
+            subprocess.run(cmd, check=True)
 
-    if verbose:
-        print('publishing....')
+        if verbose:
+            print('publishing....')
 
-    cmd = '%s setup.py sdist upload -r %s' % (executable, server_name, )
-    if dry_run:
-        print('\t' + cmd)
-    else:
-        os.system(cmd)
+        artifacts = []
+        if not dry_run:
+            artifacts = sorted(
+                os.path.join(output_dir, name)
+                for name in os.listdir(output_dir)
+                if os.path.isfile(os.path.join(output_dir, name))
+            )
+        cmd = [executable, '-m', 'twine', 'upload', '-r', server_name] + artifacts
+        if dry_run:
+            print('\t' + ' '.join(cmd))
+        else:
+            subprocess.run(cmd, check=True)
 
     return True
 

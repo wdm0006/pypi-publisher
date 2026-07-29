@@ -6,6 +6,7 @@ tmp_path and git.Repo is mocked.
 """
 
 import os
+from types import SimpleNamespace
 from unittest import mock
 
 import pytest
@@ -107,6 +108,23 @@ def test_update_pypirc_upserts_existing_section(fake_home):
     assert servers.count("myserver") == 1
 
 
+def test_update_pypirc_creates_file_owner_readable_only(fake_home):
+    ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
+
+    assert oct(os.stat(fake_home / ".pypirc").st_mode & 0o777) == "0o600"
+
+
+def test_update_pypirc_tightens_permissions_on_existing_file(fake_home):
+    # A .pypirc left world-readable by an earlier run is narrowed on the next write.
+    pypirc = fake_home / ".pypirc"
+    pypirc.write_text("[distutils]\nindex-servers = \n")
+    os.chmod(pypirc, 0o644)
+
+    ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
+
+    assert oct(os.stat(pypirc).st_mode & 0o777) == "0o600"
+
+
 def test_update_pypirc_dry_run_writes_nothing(fake_home):
     # Seed an existing file first.
     ppp.update_pypirc("alice", "secret", "https://example.com", "myserver")
@@ -115,6 +133,14 @@ def test_update_pypirc_dry_run_writes_nothing(fake_home):
     ppp.update_pypirc("bob", "hunter2", "https://new.example.com", "myserver", dry_run=True)
 
     assert (fake_home / ".pypirc").read_text() == before
+
+
+def test_update_pypirc_dry_run_without_existing_file(fake_home):
+    # First run for a new user: previewing a publish must not need a .pypirc to exist.
+    result = ppp.update_pypirc("alice", "secret", "https://example.com", "myserver", dry_run=True)
+
+    assert result is True
+    assert not (fake_home / ".pypirc").exists()
 
 
 # ---------------------------------------------------------------------------
@@ -165,7 +191,7 @@ def test_check_tag_raises_on_duplicate(tmp_path, monkeypatch):
     _write_setup_py(tmp_path, "version = '2.0.0'\n")
 
     fake_repo = mock.Mock()
-    fake_repo.tags = ["2.0.0"]  # tag already exists
+    fake_repo.tags = [SimpleNamespace(name="2.0.0")]  # tag already exists
     with mock.patch.object(ppp, "Repo", return_value=fake_repo):
         with pytest.raises(ValueError):
             ppp.check_tag()
@@ -269,7 +295,88 @@ def test_main_publish_lint_failure_exits_nonzero(monkeypatch):
     monkeypatch.setattr(ppp, "update_pypirc", lambda *a, **k: True)
     monkeypatch.setattr(ppp, "lint_dir", lambda: False)
 
-    # lint failure raises ValueError; with tracebacks suppressed the CLI still
-    # exits non-zero when run as a process (verified separately below).
     with pytest.raises(ValueError):
         ppp.main()
+
+
+# ---------------------------------------------------------------------------
+# publish
+# ---------------------------------------------------------------------------
+
+def test_publish_builds_and_uploads_with_twine(tmp_path, monkeypatch):
+    """publish() builds sdist+wheel and uploads them via twine, not setup.py."""
+    stale_artifact = tmp_path / "dist" / "package-0.0.1.tar.gz"
+    stale_artifact.parent.mkdir()
+    stale_artifact.write_text("")
+
+    def build_artifact(cmd, check):
+        if cmd[2] == "build":
+            output_dir = cmd[cmd.index("--outdir") + 1]
+            open(os.path.join(output_dir, "package-0.0.2.tar.gz"), "w").close()
+            os.mkdir(os.path.join(output_dir, ".tmp-build"))
+
+    monkeypatch.chdir(tmp_path)
+    with mock.patch.object(ppp.subprocess, "run", side_effect=build_artifact) as mock_run:
+        assert ppp.publish("testserver") is True
+
+    build_cmd, upload_cmd = [call.args[0] for call in mock_run.call_args_list]
+    output_dir = build_cmd[build_cmd.index("--outdir") + 1]
+    artifact = os.path.join(output_dir, "package-0.0.2.tar.gz")
+
+    assert build_cmd == [
+        ppp.sys.executable, "-m", "build", "--outdir", output_dir,
+    ]
+    assert upload_cmd == [
+        ppp.sys.executable, "-m", "twine", "upload", "-r", "testserver",
+        artifact,
+    ]
+    assert str(stale_artifact) not in upload_cmd
+    assert os.path.join(output_dir, ".tmp-build") not in upload_cmd
+    assert "*" not in upload_cmd
+    assert not os.path.exists(output_dir)
+    for call in mock_run.call_args_list:
+        assert call.kwargs["check"] is True
+
+
+def test_publish_passes_server_name_as_argument_not_shell_string():
+    """server_name reaches twine as its own argv entry, so it is never shell-interpreted."""
+    injection = "prod; rm -rf /"
+
+    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+        ppp.publish(injection)
+
+    upload_cmd = mock_run.call_args_list[1].args[0]
+    assert upload_cmd[upload_cmd.index("-r") + 1] == injection
+
+
+def test_publish_dry_run_prints_commands_and_uploads_nothing(capsys):
+    """--dry-run prints the build/upload commands and runs no subprocess."""
+    with mock.patch.object(ppp.subprocess, "run") as mock_run:
+        assert ppp.publish("testserver", dry_run=True) is True
+
+    mock_run.assert_not_called()
+
+    out = capsys.readouterr().out
+    assert "-m build --outdir" in out
+    assert "-m twine upload -r testserver" in out
+    assert "*" not in out
+    assert "setup.py" not in out
+
+
+def test_publish_verbose_messaging(capsys):
+    """--verbose keeps the progress messaging around each step."""
+    with mock.patch.object(ppp.subprocess, "run"):
+        ppp.publish("testserver", verbose=True)
+
+    out = capsys.readouterr().out
+    assert "building..." in out
+    assert "publishing...." in out
+
+
+def test_publish_create_tag_tags_before_uploading():
+    """publish(-t) tags the release before it builds or uploads."""
+    with mock.patch.object(ppp, "check_tag") as mock_check_tag, \
+            mock.patch.object(ppp.subprocess, "run"):
+        ppp.publish("testserver", verbose=True, dry_run=True, create_tag=True)
+
+    mock_check_tag.assert_called_once_with(verbose=True, dry_run=True)
